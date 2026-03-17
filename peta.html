@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Analisis PKKPR - RDTR</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Turf JS untuk analisis spasial -->
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    
+    <!-- ShpJS untuk membaca Shapefile -->
+    <script src="https://unpkg.com/shpjs@latest/dist/shp.js"></script>
+    
+    <!-- Font Awesome untuk ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- CSS Kustom untuk peta -->
+    <link rel="stylesheet" href="css/map.css">
+    
+    <style>
+        /* ===== GLOBAL ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        header {
+            background: #0b3d6d;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 10px 20px;
+        }
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .logo {
+            height: 45px;
+        }
+        .nav-left span {
+            color: white;
+            font-weight: 600;
+            font-size: 1.5rem;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        .nav ul {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .nav ul li {
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .nav ul li a {
+            color: white;
+            text-decoration: none;
+        }
+        .nav ul li:hover a {
+            color: #7cc3ff;
+        }
+        .nav ul li.active a {
+            color: #ffcc00;
+            font-weight: 600;
+        }
+        .home-button {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 30px;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        .home-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        #container {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+        #sidebar {
+            width: 420px;
+            background: white;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.08);
+            z-index: 10;
+        }
+        #map {
+            flex: 1;
+            height: 100%;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0b3d6d;
+            margin: 20px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e0e7ef;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title i {
+            color: #ffcc00;
+        }
+        .section-title:first-of-type {
+            margin-top: 0;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+        .form-group label i {
+            width: 18px;
+            color: #0b3d6d;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d0d9e5;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            background-color: #f9fafc;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #0b3d6d;
+            box-shadow: 0 0 0 3px rgba(11,61,109,0.1);
+            background-color: #ffffff;
+        }
+        .form-group input[type="file"] {
+            padding: 8px;
+            background-color: #f9fafc;
+            border-style: dashed;
+        }
+        .form-group input[type="file"]:hover {
+            border-color: #0b3d6d;
+        }
+        .radio-group {
+            background: #f4f7fb;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 25px;
+            border: 1px solid #e0e7ef;
+        }
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+            cursor: pointer;
+        }
+        .radio-group input[type="radio"] {
+            width: auto;
+            accent-color: #0b3d6d;
+            transform: scale(1.1);
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .input-group input {
+            flex: 1;
+        }
+        .btn-outline {
+            background: white;
+            border: 1px solid #0b3d6d;
+            color: #0b3d6d;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .btn-outline:hover {
+            background: #0b3d6d;
+            color: white;
+        }
+        .btn-submit {
+            background: #0b3d6d;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            width: 100%;
+            transition: 0.2s;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(11,61,109,0.2);
+        }
+        .btn-submit:hover {
+            background: #1a5a9c;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(11,61,109,0.3);
+        }
+        .btn-submit:disabled {
+            background: #b0c0d0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .info-note {
+            background: #eef6ff;
+            border-left: 4px solid #0b3d6d;
+            padding: 12px 15px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+            border-radius: 0 8px 8px 0;
+            color: #1e4660;
+        }
+        .success-message,
+        .error-message {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin: 15px 0 5px 0;
+            display: none;
+            font-size: 0.95rem;
+        }
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        .hasil-analisis-container {
+            background: #f4f7fb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid #e0e7ef;
+        }
+        @media (max-width: 768px) {
+            .nav-left span {
+                font-size: 1.2rem;
+                white-space: normal;
+            }
+            .nav ul {
+                gap: 15px;
+            }
+            #sidebar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="nav">
+        <div class="nav-left">
+            <img src="img/logo.png" class="logo" alt="Logo Dinas PUPR TTS">
+            <span>Dinas PUPR Kab. Timor Tengah Selatan</span>
+        </div>
+        <ul>
+            <li><a href="index.html">Beranda</a></li>
+            <li><a href="data.html">Data</a></li>
+            <li class="active"><a href="peta.html">Peta Analisis</a></li>
+            <li><a href="tentang.html">Tentang</a></li>
+        </ul>
+        <a href="index.html" class="home-button" title="Kembali ke Beranda">
+            <i class="fas fa-home"></i> Beranda
+        </a>
+    </div>
+</header>
+
+<div id="container">
+    <div id="sidebar">
+        <h3 style="margin-top:0; color:#0b3d6d;"><i class="fas fa-clipboard-list" style="margin-right:10px;"></i> PANEL ANALISIS & PENGAJUAN</h3>
+        
+        <!-- ===== METODE INPUT LOKASI (UNTUK ANALISIS) ===== -->
+        <div class="section-title">
+            <i class="fas fa-map-marker-alt"></i> METODE INPUT LOKASI
+        </div>
+        <div class="radio-group">
+            <label>
+                <input type="radio" name="inputMethod" value="file" checked> <i class="fas fa-upload"></i> Upload File
+            </label>
+            <label>
+                <input type="radio" name="inputMethod" value="coordinate"> <i class="fas fa-pencil-alt"></i> Input Koordinat
+            </label>
+        </div>
+
+        <div id="panelUpload" class="input-panel">
+            <div class="form-group">
+                <label><i class="fas fa-file-upload"></i> Upload Data (Geojson/Shapefile ZIP)</label>
+                <input type="file" id="uploadGeoJSON" accept=".geojson,.json,.zip">
+                <div style="font-size:0.8rem; color:#6c757d; margin-top:6px;">
+                    <i class="fas fa-info-circle"></i> Format: .geojson, .json, .zip (berisi shapefile) – File ini akan digunakan untuk analisis kesesuaian dan menjadi lampiran permohonan.
+                </div>
+            </div>
+        </div>
+
+        <div id="panelKoordinat" class="input-panel" style="display: none;">
+            <div class="form-group">
+                <label><i class="fas fa-globe"></i> Koordinat Titik (Lat, Long)</label>
+                <div class="input-group">
+                    <input type="number" id="coordLat" step="any" placeholder="Garis Lintang (cth: -9.8)" value="-9.8">
+                    <input type="number" id="coordLng" step="any" placeholder="Garis Bujur (cth: 124.3)" value="124.3">
+                </div>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <button class="btn-outline" id="btnTampilkanTitik" style="flex:1;"><i class="fas fa-map-pin"></i> Tampilkan di Peta</button>
+                    <button class="btn-outline" id="btnGunakanKoordinat" style="flex:1;"><i class="fas fa-check"></i> Gunakan & Analisis</button>
+                </div>
+                <div style="font-size:0.8rem; color:#6c757d; margin-top:8px;">
+                    <i class="fas fa-info-circle"></i> Titik akan diperluas menjadi buffer 10m untuk analisis.
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== DATA PEMOHON ===== -->
+        <div class="section-title">
+            <i class="fas fa-user"></i> DATA PEMOHON
+        </div>
+        
+        <div class="form-group">
+            <label><i class="fas fa-user-circle"></i> Nama Pemohon *</label>
+            <input type="text" id="namaPemohon" placeholder="Masukkan nama lengkap" required>
+        </div>
+        
+        <div class="form-group">
+            <label><i class="fas fa-phone-alt"></i> Nomor Telepon</label>
+            <input type="tel" id="telepon" placeholder="Contoh: 081234567890">
+        </div>
+        
+        <div class="form-group">
+            <label><i class="fas fa-envelope"></i> Email</label>
+            <input type="email" id="email" placeholder="contoh@email.com">
+        </div>
+        
+        <div class="form-group">
+            <label><i class="fas fa-map-marked-alt"></i> Alamat / Deskripsi Lokasi *</label>
+            <textarea id="alamatLokasi" rows="2" placeholder="Masukkan alamat atau deskripsi lokasi yang dimohon" required></textarea>
+        </div>
+
+        <!-- ===== LAMPIRAN SHP OPSIONAL (TIDAK UNTUK ANALISIS) ===== -->
+        <div class="section-title">
+            <i class="fas fa-paperclip"></i> LAMPIRAN TAMBAHAN (OPSIONAL)
+        </div>
+        <div class="form-group">
+            <label><i class="fas fa-file-archive"></i> Upload File SHP (ZIP) – Lampiran</label>
+            <input type="file" id="lampiranShp" accept=".zip">
+            <div style="font-size:0.8rem; color:#6c757d; margin-top:6px;">
+                <i class="fas fa-info-circle"></i> Upload file ZIP berisi shapefile sebagai lampiran tambahan (tidak digunakan untuk analisis).
+            </div>
+        </div>
+
+        <!-- ===== JENIS KEGIATAN ===== -->
+        <div class="section-title">
+            <i class="fas fa-briefcase"></i> JENIS KEGIATAN
+        </div>
+        <div class="form-group">
+            <label>Pilih Jenis Kegiatan *</label>
+            <select id="jenisKegiatan" required>
+                <option value="">-- Pilih Kegiatan --</option>
+                <option value="Apotik">Apotik</option>
+                <option value="Rumah Sakit">Rumah Sakit</option>
+                <option value="Sekolah">Sekolah</option>
+                <option value="Perdagangan">Perdagangan</option>
+                <option value="Industri">Industri</option>
+                <option value="Permukiman">Permukiman</option>
+                <option value="Kantor">Kantor</option>
+                <option value="Hotel">Hotel</option>
+                <option value="Restoran">Restoran</option>
+                <option value="Lainnya">Lainnya (isi manual)</option>
+            </select>
+            <input type="text" id="kegiatanLainnya" placeholder="Ketik kegiatan lain..." style="display:none; margin-top:8px;">
+        </div>
+        
+        <button class="btn-submit" id="btnAjukan" disabled onclick="ajukanPermohonan()">
+            <i class="fas fa-paper-plane"></i> AJUKAN PERMOHONAN
+        </button>
+        
+        <div id="successMessage" class="success-message"></div>
+        <div id="errorMessage" class="error-message"></div>
+        
+        <!-- ===== HASIL ANALISIS ===== -->
+        <div class="hasil-analisis-container">
+            <h4 style="margin:0 0 12px 0; display:flex; align-items:center; gap:8px; color:#0b3d6d;">
+                <i class="fas fa-chart-bar"></i> HASIL ANALISIS
+            </h4>
+            <div id="hasilAnalisis">
+                <div style="padding: 20px; text-align: center; color: #6c757d;">
+                    <i class="fas fa-arrow-up" style="font-size:2rem; margin-bottom:10px; opacity:0.5;"></i>
+                    <p>Upload file atau input koordinat untuk memulai analisis.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="map"></div>
+</div>
+
+<!-- Script untuk toggle panel dan lainnya -->
+<script>
+    // Tampilkan input manual jika memilih "Lainnya"
+    document.getElementById('jenisKegiatan').addEventListener('change', function() {
+        const lainnya = document.getElementById('kegiatanLainnya');
+        lainnya.style.display = this.value === 'Lainnya' ? 'block' : 'none';
+        if (this.value !== 'Lainnya') lainnya.value = '';
+    });
+
+    // Toggle antara panel upload dan koordinat
+    const radioFile = document.querySelector('input[value="file"]');
+    const radioCoord = document.querySelector('input[value="coordinate"]');
+    const panelUpload = document.getElementById('panelUpload');
+    const panelKoordinat = document.getElementById('panelKoordinat');
+
+    radioFile.addEventListener('change', function() {
+        if (this.checked) {
+            panelUpload.style.display = 'block';
+            panelKoordinat.style.display = 'none';
+        }
+    });
+    radioCoord.addEventListener('change', function() {
+        if (this.checked) {
+            panelUpload.style.display = 'none';
+            panelKoordinat.style.display = 'block';
+        }
+    });
+</script>
+
+<!-- File JS Utama (map.js) - pastikan map.js ada dan berisi inisialisasi peta, layer RDTR, dll -->
+<script src="js/map.js"></script>
+
+<!-- Script utama analisis dan validasi RDTR -->
+<script>
+    // ==================== GLOBAL VARIABLES ====================
+    let hasilAnalisisTerakhir = null; // { luasTotal, zonaResult, totalIntersect }
+    let geojsonUploaded = null;       // menyimpan geojson hasil upload/koordinat
+    let uploadedFileName = null;       // menyimpan nama file yang diupload untuk analisis (akan menjadi fileShp)
+    let lampiranFileName = null;       // menyimpan nama file lampiran tambahan (opsional)
+    let currentInputMethod = 'file';
+    let statusKesesuaianGlobal = null; // 'Sesuai', 'Bersyarat', 'Tidak Sesuai'
+
+    // ==================== INISIALISASI ====================
+    // Fungsi ini dipanggil dari map.js setelah analisis selesai
+    function setHasilAnalisis(luasTotal, zonaResult, totalIntersect) {
+        hasilAnalisisTerakhir = { luasTotal, zonaResult, totalIntersect };
+        cekFormDanAktifkanTombol();
+    }
+
+    function setGeojsonUploaded(geojson) {
+        geojsonUploaded = geojson;
+    }
+
+    // ==================== HANDLE UPLOAD FILE (UNTUK ANALISIS) ====================
+    document.getElementById('uploadGeoJSON').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) {
+            uploadedFileName = null;
+            return;
+        }
+
+        // Simpan nama file untuk keperluan lampiran permohonan
+        uploadedFileName = file.name;
+
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const arrayBuffer = ev.target.result;
+
+            if (file.name.endsWith('.zip')) {
+                shp(arrayBuffer).then(function(geojson) {
+                    handleUploadedData(geojson);
+                }).catch(function(err) {
+                    alert('Gagal membaca shapefile: ' + err.message);
+                });
+            } else if (file.name.endsWith('.geojson') || file.name.endsWith('.json')) {
+                try {
+                    const geojson = JSON.parse(new TextDecoder().decode(arrayBuffer));
+                    handleUploadedData(geojson);
+                } catch (err) {
+                    alert('Gagal parsing GeoJSON: ' + err.message);
+                }
+            } else {
+                alert('Format file tidak didukung. Gunakan .geojson atau .zip (berisi shapefile)');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    function handleUploadedData(geojson) {
+        if (!geojson || geojson.type !== 'FeatureCollection' || !Array.isArray(geojson.features)) {
+            alert('Data harus berupa FeatureCollection yang valid.');
+            return;
+        }
+        if (geojson.features.length === 0) {
+            alert('Tidak ada fitur dalam file.');
+            return;
+        }
+
+        if (window.uploadedLayer) {
+            map.removeLayer(window.uploadedLayer);
+        }
+
+        window.uploadedLayer = L.geoJSON(geojson, {
+            style: { color: '#ff0000', weight: 2, fillOpacity: 0.1 }
+        }).addTo(map);
+
+        map.fitBounds(window.uploadedLayer.getBounds());
+
+        setGeojsonUploaded(geojson);
+        analisisData(geojson);
+    }
+
+    // ==================== INPUT KOORDINAT ====================
+    document.getElementById('btnTampilkanTitik').addEventListener('click', function() {
+        let lat = parseFloat(document.getElementById('coordLat').value);
+        let lng = parseFloat(document.getElementById('coordLng').value);
+        if (isNaN(lat) || isNaN(lng)) {
+            alert('Masukkan koordinat yang valid');
+            return;
+        }
+
+        let point = turf.point([lng, lat]);
+        let buffered = turf.buffer(point, 10, { units: 'meters' });
+
+        if (window.uploadedLayer) {
+            map.removeLayer(window.uploadedLayer);
+        }
+
+        window.uploadedLayer = L.geoJSON(buffered, {
+            style: { color: '#ff0000', weight: 2, fillOpacity: 0.1 }
+        }).addTo(map);
+        map.fitBounds(window.uploadedLayer.getBounds());
+    });
+
+    document.getElementById('btnGunakanKoordinat').addEventListener('click', function() {
+        let lat = parseFloat(document.getElementById('coordLat').value);
+        let lng = parseFloat(document.getElementById('coordLng').value);
+        if (isNaN(lat) || isNaN(lng)) {
+            alert('Masukkan koordinat yang valid');
+            return;
+        }
+
+        // Reset nama file karena menggunakan koordinat
+        uploadedFileName = null;
+
+        let point = turf.point([lng, lat]);
+        let buffered = turf.buffer(point, 10, { units: 'meters' });
+        let geojson = {
+            type: 'FeatureCollection',
+            features: [buffered]
+        };
+
+        if (window.uploadedLayer) {
+            map.removeLayer(window.uploadedLayer);
+        }
+
+        window.uploadedLayer = L.geoJSON(geojson, {
+            style: { color: '#ff0000', weight: 2, fillOpacity: 0.1 }
+        }).addTo(map);
+        map.fitBounds(window.uploadedLayer.getBounds());
+
+        setGeojsonUploaded(geojson);
+        analisisData(geojson);
+    });
+
+    // ==================== LAMPIRAN TAMBAHAN (OPSIONAL) ====================
+    document.getElementById('lampiranShp').addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            const file = e.target.files[0];
+            if (!file.name.toLowerCase().endsWith('.zip')) {
+                alert('File lampiran harus berformat .zip');
+                e.target.value = '';
+                lampiranFileName = null;
+            } else {
+                lampiranFileName = file.name;
+            }
+        } else {
+            lampiranFileName = null;
+        }
+    });
+
+    // ==================== ANALISIS SPASIAL ====================
+    function analisisData(geojson) {
+        if (!window.rtrwData) {
+            tampilkanPesan('error', 'Data RDTR belum dimuat. Tunggu sebentar.');
+            return;
+        }
+
+        // Hitung luas total
+        let luasTotal = 0;
+        try {
+            let features = geojson.type === 'FeatureCollection' ? geojson.features : [geojson];
+            features.forEach(f => {
+                if (f.geometry && (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon')) {
+                    luasTotal += turf.area(f);
+                }
+            });
+        } catch (e) {
+            console.error('Gagal hitung luas total:', e);
+        }
+
+        // Hitung irisan per zona RDTR
+        let zonaIntersect = {};
+        let totalIntersect = 0;
+        let features = geojson.type === 'FeatureCollection' ? geojson.features : [geojson];
+        features.forEach(f => {
+            window.rtrwData.features.forEach(rdtrFeat => {
+                try {
+                    if (turf.booleanIntersects(f, rdtrFeat)) {
+                        let zona = rdtrFeat.properties?.ZONA || 'Tidak diketahui';
+                        let intersection = turf.intersect(f, rdtrFeat);
+                        if (intersection) {
+                            let area = turf.area(intersection);
+                            zonaIntersect[zona] = (zonaIntersect[zona] || 0) + area;
+                            totalIntersect += area;
+                        }
+                    }
+                } catch (err) {}
+            });
+        });
+
+        // Tampilkan hasil luas
+        let hasilHtml = '';
+        if (totalIntersect > 0) {
+            hasilHtml += `<p><strong>Total luas permohonan:</strong> ${(luasTotal/10000).toFixed(2)} Ha</p>`;
+            hasilHtml += `<p><strong>Luas sesuai RDTR:</strong> ${(totalIntersect/10000).toFixed(2)} Ha</p>`;
+            hasilHtml += '<p><strong>Rincian per zona:</strong></p><ul>';
+            for (let [zona, luas] of Object.entries(zonaIntersect)) {
+                hasilHtml += `<li>${zona}: ${(luas/10000).toFixed(2)} Ha</li>`;
+            }
+            hasilHtml += '</ul>';
+        } else {
+            hasilHtml = '<p>Tidak ada irisan dengan RDTR. Lokasi berada di luar zona atau tidak sesuai.</p>';
+        }
+        document.getElementById('hasilAnalisis').innerHTML = hasilHtml;
+
+        // ===== VALIDASI KESESUAIAN BERDASARKAN PERDA =====
+        const kegiatanSelect = document.getElementById('jenisKegiatan').value;
+        const kegiatanLainnya = document.getElementById('kegiatanLainnya').value.trim();
+        const kegiatanFinal = kegiatanSelect === 'Lainnya' ? kegiatanLainnya : kegiatanSelect;
+
+        if (kegiatanFinal) {
+            const kesesuaian = cekKesesuaian(geojson, kegiatanFinal);
+            statusKesesuaianGlobal = kesesuaian.status;
+
+            let warnaStatus = kesesuaian.status === 'Sesuai' ? 'green' : (kesesuaian.status === 'Bersyarat' ? 'orange' : 'red');
+            let kesesuaianHtml = `
+                <hr>
+                <p><strong>Kesesuaian dengan RDTR:</strong> <span style="color: ${warnaStatus};">${kesesuaian.status}</span></p>
+                <p><small>${kesesuaian.detail.join('<br>')}</small></p>
+            `;
+            document.getElementById('hasilAnalisis').innerHTML += kesesuaianHtml;
+        } else {
+            document.getElementById('hasilAnalisis').innerHTML += '<p><em>Pilih jenis kegiatan untuk melihat kesesuaian.</em></p>';
+        }
+
+        setHasilAnalisis(luasTotal, zonaIntersect, totalIntersect);
+    }
+
+    // ==================== VALIDASI KESESUAIAN BERDASARKAN PERDA ====================
+    // Mapping kegiatan yang diperbolehkan (allow), tidak diperbolehkan (deny), atau bersyarat (conditional) per sub zona
+    // Berdasarkan Pasal 44 - Pasal 67 PERDA Kab. TTS No. 8 Tahun 2018 (disederhanakan)
+    const peraturanZonasi = {
+        // Zona Perumahan
+        'R-1': { // Perumahan Kepadatan Tinggi
+            allow: ['Permukiman'],
+            conditional: ['Perdagangan', 'Kantor', 'Sekolah', 'Apotik', 'Industri'],
+            deny: ['Rumah Sakit', 'Hotel', 'Restoran']
+        },
+        'R-2': { // Perumahan Kepadatan Sedang (Pasal 49)
+            allow: ['Permukiman'],
+            conditional: ['Perdagangan', 'Kantor', 'Sekolah', 'Apotik', 'Industri', 'Rumah Sakit', 'Hotel', 'Restoran'],
+            deny: []
+        },
+        'R-3': { // Perumahan Kepadatan Rendah (Pasal 50)
+            allow: ['Permukiman'],
+            conditional: ['Perdagangan', 'Kantor', 'Sekolah', 'Apotik', 'Industri', 'Rumah Sakit', 'Hotel', 'Restoran'],
+            deny: []
+        },
+        // Zona Perdagangan dan Jasa
+        'K-1': { // Perdagangan Tunggal (Pasal 51)
+            allow: ['Perdagangan', 'Kantor', 'Apotik', 'Restoran', 'Hotel'],
+            conditional: ['Industri'],
+            deny: ['Rumah Sakit', 'Sekolah', 'Permukiman']
+        },
+        'K-2': { // Perdagangan Kopel (Pasal 52)
+            allow: ['Perdagangan', 'Kantor', 'Apotik', 'Restoran'],
+            conditional: [],
+            deny: ['Rumah Sakit', 'Sekolah', 'Industri', 'Hotel', 'Permukiman']
+        },
+        'K-3': { // Perdagangan Deret (Pasal 53)
+            allow: ['Perdagangan'],
+            conditional: ['Kantor', 'Apotik'],
+            deny: ['Rumah Sakit', 'Sekolah', 'Industri', 'Hotel', 'Restoran', 'Permukiman']
+        },
+        // Zona Perkantoran
+        'KT-1': { // Perkantoran Pemerintah (Pasal 54)
+            allow: ['Kantor'],
+            conditional: ['Perdagangan', 'Apotik'],
+            deny: ['Rumah Sakit', 'Sekolah', 'Industri', 'Hotel', 'Restoran', 'Permukiman']
+        },
+        'KT-2': { // Perkantoran Swasta (Pasal 55)
+            allow: ['Kantor'],
+            conditional: ['Perdagangan', 'Apotik'],
+            deny: ['Rumah Sakit', 'Sekolah', 'Industri', 'Hotel', 'Restoran', 'Permukiman']
+        },
+        // Zona Industri
+        'I-3': { // Industri Kecil (Pasal 56)
+            allow: ['Industri'],
+            conditional: ['Perdagangan', 'Permukiman'],
+            deny: ['Rumah Sakit', 'Sekolah', 'Kantor', 'Hotel', 'Restoran']
+        },
+        // Zona Sarana Pelayanan Umum
+        'SPU-1': { // Pendidikan (Pasal 57)
+            allow: ['Sekolah'],
+            conditional: ['Perdagangan'],
+            deny: ['Rumah Sakit', 'Industri', 'Hotel', 'Restoran', 'Permukiman', 'Kantor', 'Apotik']
+        },
+        'SPU-2': { // Transportasi (Pasal 58)
+            allow: [],
+            conditional: ['Perdagangan'],
+            deny: ['Rumah Sakit', 'Sekolah', 'Industri', 'Hotel', 'Restoran', 'Permukiman', 'Kantor', 'Apotik']
+        },
+        'SPU-3': { // Kesehatan (Pasal 59)
+            allow: ['Rumah Sakit', 'Apotik'],
+            conditional: ['Perdagangan'],
+            deny: ['Sekolah', 'Industri', 'Hotel', 'Restoran', 'Permukiman', 'Kantor']
+        },
+        'SPU-4': { // Olahraga (Pasal 60)
+            allow: [],
+            conditional: ['Perdagangan'],
+            deny: ['Rumah Sakit', 'Sekolah', 'Industri', 'Hotel', 'Restoran', 'Permukiman', 'Kantor', 'Apotik']
+        },
+        'SPU-6': { // Peribadatan (Pasal 61)
+            allow: [],
+            conditional: ['Perdagangan', 'Sekolah'],
+            deny: ['Rumah Sakit', 'Industri', 'Hotel', 'Restoran', 'Permukiman', 'Kantor', 'Apotik']
+        },
+        // Ruang Terbuka Non Hijau
+        'RTNH': { // (Pasal 62)
+            allow: [],
+            conditional: ['Perdagangan'],
+            deny: ['Rumah Sakit', 'Sekolah', 'Industri', 'Hotel', 'Restoran', 'Permukiman', 'Kantor', 'Apotik']
+        },
+        // Zona Peruntukan Lainnya
+        'PL-1': { // Pertanian (Pasal 63)
+            allow: [],
+            conditional: ['Permukiman', 'Perdagangan', 'Apotik'],
+            deny: ['Rumah Sakit', 'Sekolah', 'Industri', 'Hotel', 'Restoran', 'Kantor']
+        },
+        'PL-3': { // Pariwisata (Pasal 64)
+            allow: ['Hotel', 'Restoran'],
+            conditional: ['Permukiman', 'Perdagangan', 'Apotik'],
+            deny: ['Rumah Sakit', 'Sekolah', 'Industri', 'Kantor']
+        },
+        'PL-4': { // Hutan Produksi Terbatas (Pasal 65)
+            allow: [],
+            conditional: [],
+            deny: ['Rumah Sakit', 'Sekolah', 'Perdagangan', 'Industri', 'Hotel', 'Restoran', 'Permukiman', 'Kantor', 'Apotik']
+        },
+        // Zona Peruntukan Khusus
+        'KH-1': { // Pertahanan Keamanan (Pasal 66)
+            allow: [],
+            conditional: [],
+            deny: ['Rumah Sakit', 'Sekolah', 'Perdagangan', 'Industri', 'Hotel', 'Restoran', 'Permukiman', 'Kantor', 'Apotik']
+        },
+        // Zona Campuran
+        'C-1': { // Campuran (Pasal 67)
+            allow: ['Permukiman', 'Perdagangan', 'Kantor', 'Apotik', 'Restoran', 'Hotel'],
+            conditional: ['Industri'],
+            deny: ['Rumah Sakit', 'Sekolah']
+        }
+    };
+
+    function cekKesesuaianPerZona(subZona, kegiatan) {
+        const aturan = peraturanZonasi[subZona];
+        if (!aturan) return 'deny'; // zona tidak dikenal => tidak sesuai
+
+        if (aturan.allow.includes(kegiatan)) return 'allow';
+        if (aturan.conditional.includes(kegiatan)) return 'conditional';
+        return 'deny';
+    }
+
+    function cekKesesuaian(geojson, kegiatan) {
+        if (!window.rtrwData) return { status: 'Tidak Sesuai', detail: ['Data RDTR belum tersedia.'] };
+
+        let hasilZona = {};
+        let features = geojson.type === 'FeatureCollection' ? geojson.features : [geojson];
+
+        features.forEach(f => {
+            window.rtrwData.features.forEach(rdtrFeat => {
+                try {
+                    if (turf.booleanIntersects(f, rdtrFeat)) {
+                        let zona = rdtrFeat.properties?.ZONA || '';
+                        let subZona = rdtrFeat.properties?.SUBZONA || '';
+                        if (!subZona && zona) {
+                            // Tebak sub zona dari teks ZONA
+                            if (zona.includes('R-1')) subZona = 'R-1';
+                            else if (zona.includes('R-2')) subZona = 'R-2';
+                            else if (zona.includes('R-3')) subZona = 'R-3';
+                            else if (zona.includes('K-1')) subZona = 'K-1';
+                            else if (zona.includes('K-2')) subZona = 'K-2';
+                            else if (zona.includes('K-3')) subZona = 'K-3';
+                            else if (zona.includes('KT-1')) subZona = 'KT-1';
+                            else if (zona.includes('KT-2')) subZona = 'KT-2';
+                            else if (zona.includes('I-3')) subZona = 'I-3';
+                            else if (zona.includes('SPU-1')) subZona = 'SPU-1';
+                            else if (zona.includes('SPU-2')) subZona = 'SPU-2';
+                            else if (zona.includes('SPU-3')) subZona = 'SPU-3';
+                            else if (zona.includes('SPU-4')) subZona = 'SPU-4';
+                            else if (zona.includes('SPU-6')) subZona = 'SPU-6';
+                            else if (zona.includes('RTNH')) subZona = 'RTNH';
+                            else if (zona.includes('PL-1')) subZona = 'PL-1';
+                            else if (zona.includes('PL-3')) subZona = 'PL-3';
+                            else if (zona.includes('PL-4')) subZona = 'PL-4';
+                            else if (zona.includes('KH-1')) subZona = 'KH-1';
+                            else if (zona.includes('C-1')) subZona = 'C-1';
+                        }
+
+                        if (subZona) {
+                            let status = cekKesesuaianPerZona(subZona, kegiatan);
+                            hasilZona[subZona] = status; // catat status terakhir
+                        }
+                    }
+                } catch (err) {}
+            });
+        });
+
+        if (Object.keys(hasilZona).length === 0) {
+            return { status: 'Tidak Sesuai', detail: ['Area tidak menyentuh zona RDTR manapun.'] };
+        }
+
+        // Tentukan status keseluruhan: deny > conditional > allow
+        let overall = 'allow';
+        for (let z in hasilZona) {
+            if (hasilZona[z] === 'deny') {
+                overall = 'deny';
+                break;
+            } else if (hasilZona[z] === 'conditional' && overall !== 'deny') {
+                overall = 'conditional';
+            }
+        }
+
+        let statusText = overall === 'allow' ? 'Sesuai' : (overall === 'conditional' ? 'Bersyarat' : 'Tidak Sesuai');
+        let detail = Object.entries(hasilZona).map(([z, s]) => `${z}: ${s === 'allow' ? 'diizinkan' : (s === 'conditional' ? 'bersyarat' : 'tidak diizinkan')}`);
+
+        return { status: statusText, detail };
+    }
+
+    // ==================== CEK FORM DAN AKTIFKAN TOMBOL ====================
+    function cekFormDanAktifkanTombol() {
+        const nama = document.getElementById('namaPemohon').value.trim();
+        const alamat = document.getElementById('alamatLokasi').value.trim();
+        const kegiatanSelect = document.getElementById('jenisKegiatan').value;
+        const kegiatanLainnya = document.getElementById('kegiatanLainnya').value.trim();
+        const kegiatanFinal = kegiatanSelect === 'Lainnya' ? kegiatanLainnya : kegiatanSelect;
+        
+        const formValid = nama !== '' && alamat !== '' && kegiatanFinal !== '';
+        const analisisValid = hasilAnalisisTerakhir !== null && geojsonUploaded !== null;
+        
+        document.getElementById('btnAjukan').disabled = !(formValid && analisisValid);
+    }
+
+    // Event listener untuk input form
+    ['namaPemohon','alamatLokasi','jenisKegiatan','kegiatanLainnya'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', cekFormDanAktifkanTombol);
+            if (id === 'jenisKegiatan') el.addEventListener('change', cekFormDanAktifkanTombol);
+        }
+    });
+
+    // ==================== FUNGSI PENGAJUAN PERMOHONAN ====================
+    function ajukanPermohonan() {
+        if (!hasilAnalisisTerakhir || !geojsonUploaded) {
+            tampilkanPesan('error', 'Harap upload file/input koordinat dan tunggu analisis selesai.');
+            return;
+        }
+
+        const nama = document.getElementById('namaPemohon').value.trim();
+        const telepon = document.getElementById('telepon').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const alamatLokasi = document.getElementById('alamatLokasi').value.trim();
+        const kegiatanSelect = document.getElementById('jenisKegiatan').value;
+        const kegiatanLainnya = document.getElementById('kegiatanLainnya').value.trim();
+        const kegiatan = kegiatanSelect === 'Lainnya' ? kegiatanLainnya : kegiatanSelect;
+
+        if (!nama || !alamatLokasi || !kegiatan) {
+            tampilkanPesan('error', 'Harap isi semua field yang wajib (nama, alamat, kegiatan).');
+            return;
+        }
+
+        // Buat objek permohonan
+        const permohonan = {
+            id: 'PM' + Date.now(),
+            pemohon: nama,
+            kegiatan: kegiatan,
+            lokasi: alamatLokasi,
+            luas: hasilAnalisisTerakhir.luasTotal / 10000, // hektar
+            tanggal: new Date().toISOString().split('T')[0],
+            status: 'Masuk',
+            keterangan: `Telp: ${telepon || '-'}, Email: ${email || '-'}`,
+            geojson: JSON.stringify(geojsonUploaded),
+            analisis: hasilAnalisisTerakhir,
+            kesesuaian: statusKesesuaianGlobal,
+            // Simpan nama file yang diupload untuk analisis sebagai fileShp (yang akan tampil di admin)
+            fileShp: uploadedFileName
+            // Jika ingin menyimpan juga lampiran tambahan, bisa tambahkan properti terpisah
+        };
+
+        // Simpan ke localStorage
+        let dataPermohonan = JSON.parse(localStorage.getItem('permohonanData') || '[]');
+        dataPermohonan.push(permohonan);
+        localStorage.setItem('permohonanData', JSON.stringify(dataPermohonan));
+
+        tampilkanPesan('success', 'Permohonan berhasil diajukan! Silakan cek status.');
+
+        // Refresh layer pemohon di peta
+        if (typeof loadPermohonanLayer === 'function') {
+            if (window.pemohonLayer) map.removeLayer(window.pemohonLayer);
+            loadPermohonanLayer();
+        }
+
+        // Reset form? opsional
+        // document.getElementById('namaPemohon').value = '';
+        // document.getElementById('telepon').value = '';
+        // document.getElementById('email').value = '';
+        // document.getElementById('alamatLokasi').value = '';
+        // document.getElementById('jenisKegiatan').value = '';
+        // document.getElementById('kegiatanLainnya').value = '';
+        // document.getElementById('lampiranShp').value = '';
+        // uploadedFileName = null;
+        // lampiranFileName = null;
+    }
+
+    function tampilkanPesan(tipe, teks) {
+        const successDiv = document.getElementById('successMessage');
+        const errorDiv = document.getElementById('errorMessage');
+        if (tipe === 'success') {
+            successDiv.innerHTML = '<i class="fas fa-check-circle"></i> ' + teks;
+            successDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            setTimeout(() => successDiv.style.display = 'none', 5000);
+        } else {
+            errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + teks;
+            errorDiv.style.display = 'block';
+            successDiv.style.display = 'none';
+            setTimeout(() => errorDiv.style.display = 'none', 5000);
+        }
+    }
+
+    // ==================== LOAD LAYER PEMOHON ====================
+    window.addEventListener('load', function() {
+        if (typeof map !== 'undefined') {
+            loadPermohonanLayer();
+        } else {
+            const checkMap = setInterval(() => {
+                if (typeof map !== 'undefined') {
+                    clearInterval(checkMap);
+                    loadPermohonanLayer();
+                }
+            }, 100);
+        }
+    });
+
+    function loadPermohonanLayer() {
+        const stored = localStorage.getItem('permohonanData');
+        if (!stored) return;
+
+        const dataPermohonan = JSON.parse(stored);
+        const features = [];
+
+        dataPermohonan.forEach(item => {
+            if (item.geojson) {
+                try {
+                    const geojson = JSON.parse(item.geojson);
+                    if (geojson.type === 'FeatureCollection') {
+                        geojson.features.forEach(f => {
+                            f.properties = { ...f.properties, ...item, id: item.id };
+                            features.push(f);
+                        });
+                    } else if (geojson.type === 'Feature') {
+                        geojson.properties = { ...geojson.properties, ...item, id: item.id };
+                        features.push(geojson);
+                    }
+                } catch (e) { console.error('Gagal parse GeoJSON:', e); }
+            }
+        });
+
+        if (features.length === 0) return;
+
+        const featureCollection = { type: 'FeatureCollection', features: features };
+
+        function getStyle(feature) {
+            const status = feature.properties.status;
+            let color = '#3388ff';
+            if (status === 'Masuk') color = '#3498db';
+            else if (status === 'Diproses') color = '#f39c12';
+            else if (status === 'Ditolak') color = '#e74c3c';
+            else if (status === 'Terbit') color = '#2ecc71';
+            return { color: color, weight: 2, opacity: 1, fillColor: color, fillOpacity: 0.2 };
+        }
+
+        window.pemohonLayer = L.geoJSON(featureCollection, {
+            style: getStyle,
+            onEachFeature: (feature, layer) => {
+                const p = feature.properties;
+                layer.bindPopup(`
+                    <b>Pemohon:</b> ${p.pemohon}<br>
+                    <b>Kegiatan:</b> ${p.kegiatan}<br>
+                    <b>Luas:</b> ${p.luas} Ha<br>
+                    <b>Tanggal:</b> ${p.tanggal}<br>
+                    <b>Status:</b> ${p.status}<br>
+                    <b>Kesesuaian:</b> ${p.kesesuaian || '-'}<br>
+                    <b>File SHP:</b> ${p.fileShp || 'Tidak ada'}
+                `);
+            }
+        }).addTo(map);
+
+        if (window.layerControl) {
+            window.layerControl.addOverlay(window.pemohonLayer, 'Data Pemohon');
+        } else {
+            const overlays = { 'Data Pemohon': window.pemohonLayer };
+            window.layerControl = L.control.layers({}, overlays).addTo(map);
+        }
+
+        // === FITUR FOKUS KE PERMOHONAN TERTENTU (dari admin dashboard) ===
+        const focusId = localStorage.getItem('focusPermohonanId');
+        if (focusId) {
+            setTimeout(() => {
+                let found = false;
+                window.pemohonLayer.eachLayer(function(layer) {
+                    if (layer.feature && layer.feature.properties && layer.feature.properties.id == focusId) {
+                        map.fitBounds(layer.getBounds());
+                        layer.openPopup();
+                        found = true;
+                    }
+                });
+                if (found) {
+                    localStorage.removeItem('focusPermohonanId');
+                } else {
+                    alert('Fitur permohonan tidak ditemukan di peta.');
+                }
+            }, 500);
+        }
+    }
+</script>
+
+</body>
+</html>

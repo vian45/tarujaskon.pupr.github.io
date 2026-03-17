@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGIS Tata Ruang Kabupaten Timor Tengah Selatan</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        body {
+            background: #f5f7fa;
+            color: #333;
+        }
+        header {
+            background: #0b3d6d;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 60px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .nav-left img {
+            height: 45px;
+            width: auto;
+        }
+        .nav-left span {
+            color: white;
+            font-weight: 600;
+            font-size: 1.5rem;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        .nav ul {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .nav ul li {
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .nav ul li a {
+            color: white;
+            text-decoration: none;
+        }
+        .nav ul li:hover {
+            color: #7cc3ff;
+        }
+        .btn-login {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+            margin-left: 20px;
+        }
+        .btn-login:hover {
+            background: white;
+            color: #0b3d6d;
+        }
+
+        /* Hero */
+        .hero {
+            position: relative;
+            height: 520px;
+            overflow: hidden;
+            color: white;
+        }
+        .hero-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .slider-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: linear-gradient(135deg, #0b3d6d, #1e88e5);
+        }
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            background-size: cover;
+            background-position: center;
+        }
+        .slide.active {
+            opacity: 1;
+        }
+        .slide1 {
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('img/hero1.jpeg');
+        }
+        .slide2 {
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('img/hero2.jpeg');
+        }
+        .slide3 {
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('img/hero3.jpeg');
+        }
+        .slider-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            cursor: pointer;
+            font-size: 18px;
+            z-index: 3;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+        .slider-btn:hover {
+            background: rgba(0,0,0,0.8);
+        }
+        .slider-btn.prev {
+            left: 20px;
+        }
+        .slider-btn.next {
+            right: 20px;
+        }
+        .hero-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 60px;
+            background: rgba(0,0,0,0.3);
+        }
+        .hero-text {
+            max-width: 550px;
+        }
+        .hero-text h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+        .hero-text h2 {
+            font-size: 30px;
+            margin-bottom: 20px;
+            color: #ffcc00;
+        }
+        .hero-text p {
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .btn {
+            background: #1e88e5;
+            padding: 14px 30px;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: 0.3s;
+            display: inline-block;
+        }
+        .btn:hover {
+            background: #1565c0;
+        }
+        .bupati-overlay {
+            height: 100%;
+            width: auto;
+            max-height: 550px;
+            margin-right: 20px;
+            position: relative;
+            z-index: 5;
+        }
+        .bupati-container {
+            position: relative;
+            display: inline-block;
+            height: 100%;
+        }
+        .bupati-container img {
+            height: 100%;
+            width: auto;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .bupati-text {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #333;
+            font-weight: bold;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+            background: rgba(255, 255, 255, 0.7);
+            padding: 15px 20px;
+            border-radius: 0 0 10px 10px;
+            backdrop-filter: blur(3px);
+            border-top: 3px solid #ffcc00;
+            letter-spacing: 1px;
+            z-index: 6;
+        }
+        .bupati-text small {
+            display: block;
+            font-size: 16px;
+            font-weight: normal;
+            color: #555;
+            margin-top: 5px;
+        }
+
+        /* Statistik */
+        .statistik {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 60px;
+            background: white;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 10;
+            border-top: 1px solid #e0e0e0;
+        }
+        .box {
+            background: #f1f4f8;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            width: 200px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+        .box i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        .box h2 {
+            font-size: 2.5rem;
+            color: #0b3d6d;
+            margin: 10px 0;
+        }
+        .box p {
+            font-size: 1rem;
+            color: #555;
+            font-weight: 500;
+        }
+        .box:nth-child(1) i { color: #3498db; }
+        .box:nth-child(2) i { color: #f39c12; }
+        .box:nth-child(3) i { color: #e74c3c; }
+        .box:nth-child(4) i { color: #2ecc71; }
+
+        /* KATA SAMBUTAN KEPALA DINAS - PROFESIONAL */
+        .sambutan-section {
+            padding: 60px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-top: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .sambutan-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 50px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        
+        .sambutan-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(11,61,109,0.15);
+        }
+        
+        .foto-kadinas {
+            flex: 0 0 300px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(145deg, #0b3d6d 0%, #1a5a9c 100%);
+        }
+        
+        .foto-kadinas img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.5s ease;
+            opacity: 0.95;
+        }
+        
+        .foto-kadinas:hover img {
+            transform: scale(1.05);
+            opacity: 1;
+        }
+        
+        .foto-kadinas::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: linear-gradient(to top, rgba(11,61,109,0.9), transparent);
+            pointer-events: none;
+        }
+        
+        .foto-kadinas::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,204,0,0.1) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .kata-sambutan {
+            flex: 1;
+            padding: 40px 40px 40px 20px;
+            position: relative;
+        }
+        
+        .kata-sambutan::before {
+            content: '"';
+            position: absolute;
+            top: -20px;
+            left: -10px;
+            font-size: 120px;
+            color: rgba(11,61,109,0.1);
+            font-family: 'Georgia', serif;
+            z-index: 1;
+        }
+        
+        .kata-sambutan h3 {
+            color: #0b3d6d;
+            font-size: 28px;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .kata-sambutan h3::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: #ffcc00;
+            margin-top: 10px;
+        }
+        
+        .jabatan {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 25px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        
+        .quote-text {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #444;
+            margin-bottom: 25px;
+            font-style: italic;
+            position: relative;
+            z-index: 2;
+            padding-right: 20px;
+            text-align: justify;
+        }
+        
+        .quote-text i {
+            color: #ffcc00;
+            margin-right: 5px;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        
+        .signature {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #e0e0e0;
+        }
+        
+        .signature-line {
+            text-align: right;
+        }
+        
+        .signature-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #0b3d6d;
+            letter-spacing: 1px;
+        }
+        
+        .signature-title {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .signature-stamp {
+            margin-left: 30px;
+            width: 80px;
+            height: 80px;
+            background: rgba(255,204,0,0.1);
+            border: 2px dashed #ffcc00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0b3d6d;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transform: rotate(-15deg);
+        }
+
+        /* BERITA TERKAIT TATA RUANG & PUPR */
+        .berita-section {
+            padding: 60px;
+            background: #f1f5f9;
+        }
+        .berita-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .berita-title {
+            font-size: 32px;
+            color: #0b3d6d;
+            margin-bottom: 40px;
+            text-align: center;
+            position: relative;
+        }
+        .berita-title i {
+            margin-right: 10px;
+            color: #ffcc00;
+        }
+        .berita-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 3px;
+            background: #ffcc00;
+            margin: 15px auto 0;
+        }
+        .berita-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        .berita-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        .berita-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(11,61,109,0.1);
+        }
+        .berita-icon {
+            font-size: 2.5rem;
+            color: #1e88e5;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .berita-card h3 {
+            font-size: 1.3rem;
+            color: #0b3d6d;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        .berita-sumber {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        .berita-ringkasan {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex: 1;
+        }
+        .berita-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: #1e88e5;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+            margin-top: auto;
+        }
+        .berita-link:hover {
+            color: #0b3d6d;
+            text-decoration: underline;
+        }
+        @media (max-width: 768px) {
+            .berita-section {
+                padding: 40px 20px;
+            }
+            .berita-title {
+                font-size: 28px;
+            }
+        }
+
+        /* Modal Login */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 40px;
+            border-radius: 15px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            transition: 0.3s;
+        }
+        .close:hover {
+            color: #333;
+            transform: scale(1.1);
+        }
+        .modal h2 {
+            color: #0b3d6d;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 28px;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #1e88e5;
+            box-shadow: 0 0 0 3px rgba(30,136,229,0.1);
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: #1e88e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+        .btn-submit:hover {
+            background: #1565c0;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30,136,229,0.3);
+        }
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 15px;
+            text-align: center;
+            padding: 10px;
+            background: #fdf0ed;
+            border-radius: 5px;
+            display: none;
+        }
+        .info-section {
+            padding: 60px;
+            text-align: center;
+            background: white;
+        }
+        .info-section h2 {
+            color: #0b3d6d;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        .info-section p {
+            max-width: 800px;
+            margin: auto;
+            line-height: 1.8;
+            color: #666;
+        }
+        footer {
+            margin-top: 0;
+            background: #0b3d6d;
+            color: white;
+            text-align: center;
+            padding: 25px;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav {
+                padding: 15px 20px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .nav-left span {
+                font-size: 1.2rem;
+                white-space: normal;
+            }
+            .nav ul {
+                justify-content: flex-start;
+                gap: 15px;
+                width: 100%;
+            }
+            .hero-content {
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+                padding: 20px;
+            }
+            .hero-text {
+                margin-bottom: 30px;
+            }
+            .bupati-overlay {
+                display: none;
+            }
+            .statistik {
+                padding: 40px 20px;
+                gap: 20px;
+            }
+            .box {
+                width: calc(50% - 20px);
+                padding: 20px;
+            }
+            .sambutan-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .foto-kadinas {
+                flex: 0 0 auto;
+                width: 100%;
+                max-width: 300px;
+                margin: 0 auto;
+            }
+            .kata-sambutan {
+                padding: 30px;
+            }
+            .signature {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .signature-stamp {
+                margin-left: 0;
+            }
+        }
+        @media (max-width: 480px) {
+            .box {
+                width: 100%;
+            }
+            .hero-text h1 {
+                font-size: 28px;
+            }
+            .hero-text h2 {
+                font-size: 22px;
+            }
+            .kata-sambutan h3 {
+                font-size: 24px;
+            }
+            .quote-text {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+    <div class="nav">
+        <div class="nav-left">
+            <img src="img/logo.png" alt="Logo PUPR">
+            <span>Dinas PUPR Kabupaten Timor Tengah Selatan</span>
+        </div>
+     <ul>
+    <li><a href="index.html">Beranda</a></li>
+    <li><a href="data.html">Data</a></li>
+    <li><a href="peta.html">Peta</a></li>
+    <li><a href="tentang.html">Tentang</a></li>
+    <li><button class="btn-login" onclick="openLoginModal()"><i class="fas fa-user-lock"></i> Admin</button></li>
+</ul>
+    </div>
+</header>
+
+<!-- HERO SECTION -->
+<section class="hero">
+    <div class="hero-slider">
+        <div class="slider-container">
+            <div class="slide slide1 active"></div>
+            <div class="slide slide2"></div>
+            <div class="slide slide3"></div>
+        </div>
+        <button class="slider-btn prev" onclick="changeSlide(-1)">❮</button>
+        <button class="slider-btn next" onclick="changeSlide(1)">❯</button>
+    </div>
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1>Sistem Informasi Tata Ruang</h1>
+            <h2>Kesesuaian Kegiatan Pemanfaatan Ruang (KKPR)</h2>
+            <p>Portal geospasial untuk menampilkan data tata ruang, informasi pemanfaatan ruang, dan peta wilayah kabupaten Timor Tengah Selatan.</p>
+            <a href="peta.html" class="btn">Buka Peta Interaktif</a>
+        </div>
+        <div class="bupati-overlay">
+            <div class="bupati-container">
+                <img src="img/bupati.png" alt="Bupati dan Wakil Bupati Timor Tengah Selatan">
+                <div class="bupati-text">
+                    Bupati dan Wakil Bupati
+                    <small>Timor Tengah Selatan</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- STATISTIK PERMOHONAN -->
+<section class="statistik">
+    <div class="box" onclick="window.location.href='admin.html'">
+        <i class="fas fa-file-signature"></i>
+        <h2 id="total-masuk">0</h2>
+        <p>Permohonan Masuk</p>
+    </div>
+    <div class="box" onclick="window.location.href='admin.html'">
+        <i class="fas fa-spinner"></i>
+        <h2 id="total-diproses">0</h2>
+        <p>Permohonan Diproses</p>
+    </div>
+    <div class="box" onclick="window.location.href='admin.html'">
+        <i class="fas fa-times-circle"></i>
+        <h2 id="total-ditolak">0</h2>
+        <p>Permohonan Ditolak</p>
+    </div>
+    <div class="box" onclick="window.location.href='admin.html'">
+        <i class="fas fa-check-circle"></i>
+        <h2 id="total-terbit">0</h2>
+        <p>Permohonan Terbit</p>
+    </div>
+</section>
+
+<!-- KATA SAMBUTAN KEPALA DINAS - FORMAT PNG -->
+<section class="sambutan-section">
+    <div class="sambutan-container">
+        <div class="foto-kadinas">
+            <img src="img/kepala-dinas.png" alt="Kepala Dinas PUPR Kabupaten Timor Tengah Selatan" onerror="this.src='https://via.placeholder.com/400x500?text=Kepala+Dinas'">
+        </div>
+        <div class="kata-sambutan">
+            <h3>Sambutan Kepala Dinas</h3>
+            <div class="jabatan">Kepala Dinas Pekerjaan Umum dan Penataan Ruang</div>
+            <div class="quote-text">
+                <i class="fas fa-quote-left"></i> Shalom,Assalamu’alaikum warahmatullahi wabarakatuh,Salam sejahtera bagi kita semua,Om Swastiastu,Namo Buddhaya,Salam kebajikan.
+                <br><br>
+                Puji syukur kehadirat Tuhan Yang Maha Esa atas berkat dan rahmat-Nya, kita dapat meluncurkan Portal WebGIS Tata Ruang dan KKPR Kabupaten Timor Tengah Selatan. 
+				Portal ini merupakan wujud komitmen kami untuk memberikan pelayanan terbaik kepada masyarakat dalam mengakses informasi tata ruang secara cepat, akurat, dan transparan.
+                <br><br>
+                Melalui portal ini, kami berharap proses perizinan KKPR dapat berjalan lebih efektif dan efisien. Masyarakat dapat melakukan pengecekan mandiri kesesuaian lokasi Kegiatan sebelum mengajukan permohonan, 
+				sehingga mengurangi potensi penolakan dan mempercepat investasi di Kabupaten Timor Tengah Selatan.
+                <br><br>
+                Saya mengajak seluruh masyarakat, pelaku usaha, dan pemangku kepentingan untuk memanfaatkan portal ini sebaik-baiknya. Mari bersama-sama kita wujudkan pembangunan yang terencana, 
+				berkelanjutan, dan sesuai dengan peruntukan tata ruang yang telah ditetapkan.
+                <br><br>
+                Akhir kata, saya ucapkan terima kasih dan apresiasi kepada semua pihak yang telah berkontribusi dalam pembangunan portal ini. 
+				Semoga bermanfaat dan membawa kemajuan bagi Kabupaten Timor Tengah Selatan.
+                <br><br>
+                <i class="fas fa-quote-right"></i>
+            </div>
+            <div class="signature">
+                <div class="signature-line">
+                    <div class="signature-name">Martelens Ch. Liu, ST, MT</div>
+                    <div class="signature-title">Kepala Dinas PUPR TTS</div>
+                </div>
+                <div class="signature-stamp">
+                    <i class="fas fa-stamp"></i> PUPR TTS
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- BERITA TERKAIT TATA RUANG & PUPR -->
+<section class="berita-section">
+    <div class="berita-container">
+        <h2 class="berita-title"><i class="fas fa-newspaper"></i> Berita Terkait Tata Ruang & PUPR</h2>
+        <div class="berita-grid">
+            <!-- Kartu Berita 1 -->
+            <div class="berita-card">
+                <div class="berita-icon"><i class="fas fa-hard-hat"></i></div>
+                <h3>PUPR NTT Fokus Penataan Ruang Wilayah Perbatasan</h3>
+                <p class="berita-sumber">Pos Kupang • 2 hari lalu</p>
+                <p class="berita-ringkasan">Dinas PUPR NTT menyusun rencana detail tata ruang untuk kawasan perbatasan guna mendukung pertumbuhan ekonomi dan keamanan.</p>
+                <a href="#" target="_blank" class="berita-link">Baca selengkapnya <i class="fas fa-external-link-alt"></i></a>
+            </div>
+            <!-- Kartu Berita 2 -->
+            <div class="berita-card">
+                <div class="berita-icon"><i class="fas fa-drafting-compass"></i></div>
+                <h3>PEMDA TTS Bahas RDTR Kawasan Perkotaan SoE</h3>
+                <p class="berita-sumber">Victory News • 5 hari lalu</p>
+                <p class="berita-ringkasan">Pemerintah Kabupaten TTS bersama DPRD menggelar rapat pembahasan Rencana Detail Tata Ruang (RDTR) untuk kawasan perkotaan SoE.</p>
+                <a href="#" target="_blank" class="berita-link">Baca selengkapnya <i class="fas fa-external-link-alt"></i></a>
+            </div>
+            <!-- Kartu Berita 3 -->
+            <div class="berita-card">
+                <div class="berita-icon"><i class="fas fa-tools"></i></div>
+                <h3>Kementerian PUPR Salurkan Bantuan Infrastruktur untuk TTS</h3>
+                <p class="berita-sumber">Antara NTT • 1 minggu lalu</p>
+                <p class="berita-ringkasan">Program padat karya tunai dari Kementerian PUPR menyasar perbaikan jalan dan irigasi di beberapa kecamatan Kabupaten TTS.</p>
+                <a href="#" target="_blank" class="berita-link">Baca selengkapnya <i class="fas fa-external-link-alt"></i></a>
+            </div>
+            <!-- Kartu Berita 4 -->
+            <div class="berita-card">
+                <div class="berita-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                <h3>Dinas PUPR TTS Gelar Sosialisasi KKPR</h3>
+                <p class="berita-sumber">Timor Express • 3 hari lalu</p>
+                <p class="berita-ringkasan">Sosialisasi Kesesuaian Kegiatan Pemanfaatan Ruang (KKPR) digelar untuk mempermudah pelaku usaha memahami prosedur perizinan.</p>
+                <a href="#" target="_blank" class="berita-link">Baca selengkapnya <i class="fas fa-external-link-alt"></i></a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- MODAL LOGIN -->
+<div id="loginModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeLoginModal()">&times;</span>
+        <h2><i class="fas fa-user-shield"></i> Login Admin</h2>
+        <div class="form-group">
+            <label><i class="fas fa-user"></i> Username</label>
+            <input type="text" id="username" placeholder="Masukkan username" value="admin">
+        </div>
+        <div class="form-group">
+            <label><i class="fas fa-lock"></i> Password</label>
+            <input type="password" id="password" placeholder="Masukkan password" value="admin123">
+        </div>
+        <button class="btn-submit" onclick="login()">Login</button>
+        <div id="loginError" class="error-message"></div>
+        <p style="text-align: center; margin-top: 15px; color: #999; font-size: 13px;">Demo: admin / admin123</p>
+    </div>
+</div>
+
+<!-- TENTANG WEBGIS -->
+<section class="info-section">
+    <h2>Tentang WebGIS</h2>
+    <p>
+        Aplikasi WebGIS Tata Ruang dan KKPR Kabupaten Timor Tengah Selatan (TTS) ini merupakan sistem informasi geografis berbasis web 
+		yang dikembangkan untuk mendukung pelayanan perizinan dan penataan ruang di lingkungan Dinas Pekerjaan Umum dan Penataan Ruang (PUPR) Kabupaten TTS
+    </p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <p>© 2026 Bidang penataan Ruang dan Jasa Konstruksi. All Rights Reserved.</p>
+</footer>
+
+<script>
+    // =======================
+    // SLIDER FUNCTIONALITY
+    // =======================
+    let slideIndex = 0;
+    const slides = document.querySelectorAll('.slide');
+    
+    function showSlide(n) {
+        slides.forEach(slide => slide.classList.remove('active'));
+        slides[n].classList.add('active');
+    }
+    
+    function changeSlide(direction) {
+        slideIndex += direction;
+        if (slideIndex < 0) slideIndex = slides.length - 1;
+        if (slideIndex >= slides.length) slideIndex = 0;
+        showSlide(slideIndex);
+    }
+    
+    setInterval(() => changeSlide(1), 5000);
+
+    // =======================
+    // LOGIN MODAL FUNCTIONS
+    // =======================
+    function openLoginModal() {
+        document.getElementById('loginModal').style.display = 'block';
+        document.getElementById('username').focus();
+    }
+    
+    function closeLoginModal() {
+        document.getElementById('loginModal').style.display = 'none';
+        document.getElementById('loginError').style.display = 'none';
+    }
+    
+    window.onclick = function(event) {
+        let modal = document.getElementById('loginModal');
+        if (event.target == modal) closeLoginModal();
+    }
+    
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') closeLoginModal();
+        if (event.key === 'Enter' && document.getElementById('loginModal').style.display === 'block') login();
+    });
+    
+    function login() {
+        let username = document.getElementById('username').value;
+        let password = document.getElementById('password').value;
+        let errorElement = document.getElementById('loginError');
+        
+        if (username === '' || password === '') {
+            errorElement.style.display = 'block';
+            errorElement.innerHTML = '<i class="fas fa-exclamation-circle"></i> Username dan password harus diisi';
+            return;
+        }
+        
+        if (username === 'admin' && password === 'admin123') {
+            errorElement.style.display = 'none';
+            localStorage.setItem('isAdminLoggedIn', 'true');
+            localStorage.setItem('adminUsername', username);
+            window.location.href = 'admin.html';
+        } else {
+            errorElement.style.display = 'block';
+            errorElement.innerHTML = '<i class="fas fa-exclamation-circle"></i> Username atau password salah';
+        }
+    }
+
+    // =======================
+    // STATISTIK
+    // =======================
+    function updateStats() {
+        // Ambil data permohonan dari localStorage
+        let data = localStorage.getItem('permohonanData');
+        let permohonan = data ? JSON.parse(data) : [];
+        
+        // Update statistik box
+        let masuk = permohonan.filter(p => p.status === 'Masuk').length;
+        let diproses = permohonan.filter(p => p.status === 'Diproses').length;
+        let ditolak = permohonan.filter(p => p.status === 'Ditolak').length;
+        let terbit = permohonan.filter(p => p.status === 'Terbit').length;
+        
+        document.getElementById('total-masuk').textContent = masuk;
+        document.getElementById('total-diproses').textContent = diproses;
+        document.getElementById('total-ditolak').textContent = ditolak;
+        document.getElementById('total-terbit').textContent = terbit;
+    }
+
+    // Panggil saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        updateStats();
+    });
+
+    // Update statistik jika ada perubahan data
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'permohonanData') {
+            updateStats();
+        }
+    });
+
+    // Ekspos fungsi ke global
+    window.openLoginModal = openLoginModal;
+    window.closeLoginModal = closeLoginModal;
+    window.login = login;
+    window.changeSlide = changeSlide;
+</script>
+
+</body>
+</html>

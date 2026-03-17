@@ -1,0 +1,429 @@
+/* =======================
+   VARIABLES & RESET
+   ======================= */
+:root {
+    --primary: #0b3d6d;
+    --primary-dark: #082a4c;
+    --primary-light: #1a5a9c;
+    --accent: #ffcc00;
+    --success: #2ecc71;
+    --warning: #f39c12;
+    --danger: #e74c3c;
+    --info: #3498db;
+    --gray-light: #f1f4f8;
+    --gray-medium: #e1e5ec;
+    --gray-dark: #ccc;
+    --text-dark: #2c3e50;
+    --text-light: #fff;
+    --sidebar-width: 420px;
+    --header-height: 80px;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --spacing: 16px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-hover: 0 8px 20px rgba(0,0,0,0.12);
+    --transition: 0.25s ease;
+    --font: 'Segoe UI', Roboto, system-ui, sans-serif;
+
+    /* Warna zona (konsisten dengan JS) */
+    --color-lindung: #2ecc71;
+    --color-budidaya: #f39c12;
+    --color-industri: #e74c3c;
+    --color-permukiman: #9b59b6;
+    --color-pertanian: #27ae60;
+    --color-perairan: #3498db;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: var(--font);
+    background: #f8fafd;
+    color: var(--text-dark);
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* =======================
+   HEADER (dari HTML, tambahan styling)
+   ======================= */
+header {
+    background: var(--primary);
+    color: var(--text-light);
+    padding: 0 24px;
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    box-shadow: var(--shadow);
+}
+
+/* =======================
+   SIDEBAR - DISESUAIKAN DENGAN HTML
+   ======================= */
+#sidebar {
+    width: var(--sidebar-width);
+    background: white;
+    padding: 24px 20px;
+    overflow-y: auto;
+    box-shadow: 2px 0 20px rgba(0,0,0,0.05);
+}
+
+#sidebar h3 {
+    color: var(--primary);
+    font-weight: 600;
+    margin-bottom: 20px;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Radio group sudah diatur di HTML, tapi kita perkuat */
+.radio-group {
+    background: #f4f7fb;
+    border-radius: 10px;
+    padding: 12px 16px;
+    border: 1px solid #e0e7ef;
+}
+
+/* Panel input */
+.input-panel {
+    margin: 20px 0;
+}
+
+/* Form elements */
+.form-group {
+    margin-bottom: 18px;
+}
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+.form-group input, .form-group textarea, .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d0d9e5;
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    transition: all var(--transition);
+    background: #f9fafc;
+}
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(11,61,109,0.1);
+    background: white;
+    outline: none;
+}
+.form-group input[type="file"] {
+    padding: 8px;
+    border-style: dashed;
+    cursor: pointer;
+}
+.form-group input[type="file"]:hover {
+    border-color: var(--primary);
+    background: #eef2f7;
+}
+
+/* Tombol outline */
+.btn-outline {
+    background: white;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.btn-outline:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Tombol submit */
+.btn-submit {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 10px rgba(11,61,109,0.2);
+    margin: 20px 0 10px;
+}
+.btn-submit:hover:not(:disabled) {
+    background: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(11,61,109,0.3);
+}
+.btn-submit:disabled {
+    background: #b0c0d0;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Info note */
+.info-note {
+    background: #eef6ff;
+    border-left: 4px solid var(--primary);
+    padding: 12px 15px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin: 15px 0;
+    font-size: 0.9rem;
+}
+
+/* Hasil analisis container */
+.hasil-analisis-container {
+    background: #f4f7fb;
+    border-radius: 12px;
+    padding: 18px;
+    margin-top: 20px;
+    border: 1px solid #e0e7ef;
+}
+
+/* =======================
+   MAP CUSTOMIZATION
+   ======================= */
+#map {
+    flex: 1;
+    height: 100%;
+    background: #e5e5e5;
+}
+
+.leaflet-control-attribution {
+    font-size: 9px;
+    background: rgba(255,255,255,0.9);
+    padding: 3px 8px;
+    border-radius: 20px 0 0 0;
+}
+.leaflet-control-zoom {
+    border: none;
+    box-shadow: var(--shadow);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+.leaflet-control-zoom a {
+    color: var(--primary) !important;
+    background: white !important;
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+    transition: var(--transition);
+}
+.leaflet-control-zoom a:hover {
+    background: var(--primary) !important;
+    color: white !important;
+}
+
+/* =======================
+   LEGEND (menggunakan kelas dari map.js)
+   ======================= */
+.legend {
+    background: white;
+    padding: 12px 16px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-hover);
+    font-size: 12px;
+    max-height: 350px;
+    overflow-y: auto;
+    min-width: 200px;
+}
+.legend h4 {
+    margin: 0 0 10px 0;
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 4px;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin: 6px 0;
+}
+.legend-color {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+.legend hr {
+    margin: 8px 0;
+    border: none;
+    border-top: 1px solid #eee;
+}
+
+/* =======================
+   ZONA ITEMS (untuk hasil analisis)
+   ======================= */
+.zonaItem {
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: var(--radius);
+    border-left: 4px solid var(--gray-dark);
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+.zonaItem.sesuai { border-left-color: var(--success); }
+.zonaItem.sesuai-bersyarat { border-left-color: var(--warning); }
+.zonaItem.tidak-sesuai { border-left-color: var(--danger); }
+
+.status-badge {
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.status-badge.status-sesuai { background: rgba(46,204,113,0.15); color: #27ae60; }
+.status-badge.status-sesuai-bersyarat { background: rgba(243,156,18,0.15); color: #d35400; }
+.status-badge.status-tidak-sesuai { background: rgba(231,76,60,0.15); color: #c0392b; }
+
+.statusBox {
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: var(--radius);
+    text-align: center;
+    font-weight: 600;
+    color: white;
+}
+.statusBox.status-sesuai { background: linear-gradient(135deg, var(--success), #27ae60); }
+.statusBox.status-sesuai-bersyarat { background: linear-gradient(135deg, var(--warning), #d35400); }
+.statusBox.status-tidak-sesuai { background: linear-gradient(135deg, var(--danger), #c0392b); }
+
+/* =======================
+   LOADING INDICATOR
+   ======================= */
+#loading-indicator {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px 30px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-hover);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(11,61,109,0.1);
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* =======================
+   ERROR PANEL
+   ======================= */
+.error-panel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border-left: 4px solid var(--danger);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    z-index: 1000;
+    max-width: 350px;
+    display: none;
+}
+.error-header {
+    background: #fee;
+    padding: 12px 15px;
+    border-bottom: 1px solid #fdd;
+    font-weight: bold;
+    color: #c0392b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.error-body { padding: 15px; }
+.close-btn { cursor: pointer; font-size: 20px; }
+.retry-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    margin-top: 10px;
+}
+.retry-btn:hover { background: var(--primary-dark); }
+
+/* =======================
+   INFO PANEL (pojok kiri atas)
+   ======================= */
+.map-info-panel {
+    position: absolute;
+    top: 10px;
+    left: 60px;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    z-index: 1000;
+    min-width: 200px;
+    font-size: 12px;
+}
+.info-header {
+    background: var(--primary);
+    color: white;
+    padding: 8px 12px;
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+.info-content { padding: 10px; }
+.status-success { color: var(--success); font-weight: bold; }
+
+/* =======================
+   POPUP CUSTOM
+   ======================= */
+.zonasi-popup .leaflet-popup-content {
+    margin: 10px;
+    min-width: 250px;
+}
+.popup-result h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+}
+.popup-result table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.popup-result th {
+    text-align: left;
+    padding: 4px;
+    background: #f5f5f5;
+    width: 40%;
+}
+.popup-result td { padding: 4px; }
+
+/* =======================
+   RESPONSIVE
+   ======================= */
+@media (max-width: 768px) {
+    :root { --sidebar-width: 100%; --header-height: 70px; }
+    #container { flex-direction: column; }
+    #sidebar { height: 50%; }
+    #map { height: 50%; }
+}

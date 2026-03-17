@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tentang - Dinas PUPR TTS</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f4f7fb;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        header {
+            background: #0b3d6d;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 10px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo {
+            height: 45px;
+            background: white;
+            border-radius: 5px;
+            padding: 2px;
+        }
+        
+        .nav-left span {
+            color: white;
+            font-weight: 600;
+            font-size: 1.5rem;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        
+        .nav ul {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .nav ul li {
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .nav ul li a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .nav ul li:hover a {
+            color: #7cc3ff;
+        }
+        
+        .nav ul li.active a {
+            color: #ffcc00;
+            font-weight: 600;
+        }
+        
+        .home-button {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 30px;
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        
+        .home-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        /* Container utama */
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .page-title {
+            margin-bottom: 40px;
+            border-left: 6px solid #ffcc00;
+            padding-left: 20px;
+        }
+        
+        .page-title h1 {
+            font-size: 2.5rem;
+            color: #0b3d6d;
+            margin-bottom: 5px;
+        }
+        
+        .page-title p {
+            color: #5a6f7d;
+            font-size: 1.1rem;
+        }
+        
+        /* Card */
+        .about-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+            border: 1px solid #e0e7ef;
+            transition: 0.3s;
+        }
+        
+        .about-card:hover {
+            box-shadow: 0 10px 30px rgba(11,61,109,0.08);
+            border-color: #b0c4de;
+        }
+        
+        .about-card h2 {
+            color: #0b3d6d;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .about-card h2 i {
+            color: #ffcc00;
+        }
+        
+        .about-card p {
+            color: #3a4e62;
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+            text-align: justify;
+        }
+        
+        .about-card ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+            color: #3a4e62;
+        }
+        
+        .about-card li {
+            margin-bottom: 8px;
+        }
+        
+        /* Grid 2 kolom */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        /* Peta */
+        .map-container {
+            margin-top: 20px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #d0d9e5;
+            height: 350px;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        /* Placeholder info */
+        .info-placeholder {
+            background: #f0f4fa;
+            border-left: 4px solid #ffcc00;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            color: #2c3e50;
+            font-style: italic;
+        }
+        
+        .info-placeholder i {
+            color: #0b3d6d;
+            margin-right: 10px;
+        }
+        
+        /* Kontak item */
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .contact-icon {
+            width: 40px;
+            text-align: center;
+            color: #0b3d6d;
+            font-size: 1.2rem;
+        }
+        
+        /* Responsif */
+        @media (max-width: 768px) {
+            .nav-left span {
+                font-size: 1.2rem;
+                white-space: normal;
+            }
+            .nav ul {
+                gap: 15px;
+            }
+            .page-title h1 {
+                font-size: 2rem;
+            }
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav">
+            <div class="nav-left">
+                <img src="img/logo.png" class="logo" alt="Logo Dinas PUPR TTS" onerror="this.src='https://via.placeholder.com/45?text=PUPR'">
+                <span>Dinas PUPR Kab. Timor Tengah Selatan</span>
+            </div>
+            <ul>
+                <li><a href="index.html">Beranda</a></li>
+                <li><a href="data.html">Data</a></li>
+                <li><a href="peta.html">Peta Analisis</a></li>
+                <li class="active"><a href="tentang.html">Tentang</a></li>
+            </ul>
+            <a href="index.html" class="home-button" title="Kembali ke Beranda">
+                <i class="fas fa-home"></i> Beranda
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page-title">
+            <h1><i class="fas fa-info-circle" style="margin-right: 15px; color: #ffcc00;"></i> Tentang Sistem</h1>
+            <p>Informasi mengenai WebGIS Tata Ruang dan KKPR Kabupaten Timor Tengah Selatan.</p>
+        </div>
+
+        <!-- Profil Dinas -->
+        <div class="about-card">
+            <h2><i class="fas fa-building"></i> Dinas Pekerjaan Umum dan Penataan Ruang</h2>
+            <p>Dinas Pekerjaan Umum dan Penataan Ruang (PUPR) Kabupaten Timor Tengah Selatan mempunyai tugas membantu Bupati dalam melaksanakan urusan pemerintahan bidang pekerjaan umum dan penataan ruang serta tugas pembantuan yang diberikan kepada daerah. Visi kami adalah mewujudkan infrastruktur yang handal dan tata ruang yang berkelanjutan untuk mendukung kemajuan daerah dan kesejahteraan masyarakat.</p>
+            <p>Bidang Penataan Ruang dan Jasa Konstruksi berperan dalam penyusunan kebijakan, perencanaan, dan pengendalian pemanfaatan ruang, termasuk pelayanan Kesesuaian Kegiatan Pemanfaatan Ruang (KKPR) berbasis sistem informasi geografis (WebGIS).</p>
+        </div>
+
+        <!-- Tentang WebGIS -->
+        <div class="about-card">
+            <h2><i class="fas fa-globe"></i> WebGIS Tata Ruang & KKPR</h2>
+            <p>Portal ini dibangun untuk memberikan kemudahan akses informasi tata ruang bagi masyarakat, pelaku usaha, dan instansi terkait. Dengan memanfaatkan teknologi geospasial, pengguna dapat:</p>
+            <ul>
+                <li><i class="fas fa-check-circle" style="color: #2ecc71; margin-right: 8px;"></i> Melihat peta Rencana Detail Tata Ruang (RDTR) Kawasan Perkotaan SoE.</li>
+                <li><i class="fas fa-check-circle" style="color: #2ecc71; margin-right: 8px;"></i> Melakukan pengecekan kesesuaian lokasi usaha secara mandiri.</li>
+                <li><i class="fas fa-check-circle" style="color: #2ecc71; margin-right: 8px;"></i> Mengajukan permohonan KKPR secara online.</li>
+                <li><i class="fas fa-check-circle" style="color: #2ecc71; margin-right: 8px;"></i> Mengunduh dokumen perencanaan tata ruang (RTRW, RDTR, Peraturan Zonasi).</li>
+                <li><i class="fas fa-check-circle" style="color: #2ecc71; margin-right: 8px;"></i> Memantau status permohonan yang telah diajukan.</li>
+            </ul>
+            <p>Dasar hukum: Undang-Undang Nomor 26 Tahun 2007 tentang Penataan Ruang, Peraturan Daerah Kab. TTS Nomor 8 Tahun 2018 tentang RDTR Kawasan Perkotaan SoE, dan peraturan turunannya.</p>
+        </div>
+
+        <!-- Informasi Kontak dan Lokasi (dinamis dari localStorage) -->
+        <div class="grid-2">
+            <div class="about-card" style="margin-bottom: 0;">
+                <h2><i class="fas fa-address-card"></i> Kontak</h2>
+                <div class="info-placeholder" id="kontakDisplay">
+                    <!-- Akan diisi oleh JavaScript -->
+                </div>
+            </div>
+
+            <div class="about-card" style="margin-bottom: 0;">
+                <h2><i class="fas fa-users"></i> Tim Pengembang</h2>
+                <div class="info-placeholder" id="timDisplay">
+                    <!-- Akan diisi oleh JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Peta Lokasi Kantor Dinas PUPR -->
+        <div class="about-card">
+            <h2><i class="fas fa-map-marked-alt"></i> Lokasi Kantor Dinas PUPR</h2>
+            <p>Kantor Dinas PUPR Kab. Timor Tengah Selatan berada di <strong>Jln. Laksamana Muda Yos Soedarso, Oenali - SoE</strong>. Berikut peta lokasi:</p>
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer style="background: #0b3d6d; color: white; text-align: center; padding: 25px; margin-top: 40px;">
+        <p>© 2026 Bidang Penataan Ruang dan Jasa Konstruksi Dinas Pekerjaan Umum dan Penataan Ruang</p>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Koordinat kantor Dinas PUPR: 9°52'49.19"S, 124°19'5.17"E
+        var lat = -9.88033;  // - (9 + 52/60 + 49.19/3600)
+        var lng = 124.31810; // 124 + 19/60 + 5.17/3600
+
+        // Inisialisasi peta dengan basemap OpenStreetMap
+        var map = L.map('map').setView([lat, lng], 17);
+
+        // Tile layer OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Marker untuk kantor
+        var marker = L.marker([lat, lng]).addTo(map);
+        marker.bindPopup('<b>Kantor Dinas PUPR</b><br>Jln. Laksamana Muda Yos Soedarso, Oenali - SoE').openPopup();
+
+        // Lingkaran area (opsional)
+        L.circle([lat, lng], {
+            radius: 30,
+            color: '#0b3d6d',
+            fillColor: '#ffcc00',
+            fillOpacity: 0.2
+        }).addTo(map).bindPopup('Lokasi Kantor');
+
+        // Fungsi untuk menampilkan data kontak dari localStorage
+        function loadKontak() {
+            const kontak = JSON.parse(localStorage.getItem('kontakData') || '{}');
+            const kontakDiv = document.getElementById('kontakDisplay');
+            let html = '';
+            if (kontak.alamat || kontak.telepon || kontak.email || kontak.jamKerja) {
+                if (kontak.alamat) html += `<div class="contact-item"><i class="fas fa-map-marker-alt contact-icon"></i> ${kontak.alamat}</div>`;
+                if (kontak.telepon) html += `<div class="contact-item"><i class="fas fa-phone-alt contact-icon"></i> ${kontak.telepon}</div>`;
+                if (kontak.email) html += `<div class="contact-item"><i class="fas fa-envelope contact-icon"></i> ${kontak.email}</div>`;
+                if (kontak.jamKerja) html += `<div class="contact-item"><i class="fas fa-clock contact-icon"></i> ${kontak.jamKerja}</div>`;
+            } else {
+                html = '<i class="fas fa-info-circle"></i> Data kontak belum tersedia. Silakan hubungi admin.';
+            }
+            kontakDiv.innerHTML = html;
+        }
+
+        // Fungsi untuk menampilkan data tim dari localStorage
+        function loadTim() {
+            const tim = JSON.parse(localStorage.getItem('timData') || '{}');
+            const timDiv = document.getElementById('timDisplay');
+            if (tim.list && tim.list.trim() !== '') {
+                const lines = tim.list.split('\n').filter(line => line.trim() !== '');
+                let html = '<ul style="list-style: none; padding-left: 0;">';
+                lines.forEach(line => {
+                    html += `<li style="margin-bottom: 8px;"><i class="fas fa-user-circle" style="color: #0b3d6d; margin-right: 8px;"></i> ${line}</li>`;
+                });
+                html += '</ul>';
+                timDiv.innerHTML = html;
+            } else {
+                timDiv.innerHTML = '<i class="fas fa-info-circle"></i> Informasi tim pengembang belum tersedia.';
+            }
+        }
+
+        // Panggil kedua fungsi saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            loadKontak();
+            loadTim();
+        });
+    </script>
+</body>
+</html>
